@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  transition: color 300ms ease, background-color 300ms ease;
+}
+
+
+body {
+  @apply font-body text-primary bg-light;
+}
+
+/* Typography Utilities */
+@layer components {
+  .heading-display {
+    @apply font-display text-5xl md:text-6xl font-bold tracking-tight leading-tight;
+  }
+
+  .heading-lg {
+    @apply font-display text-4xl md:text-5xl font-semibold leading-tight;
+  }
+
+  .heading-md {
+    @apply font-display text-3xl md:text-4xl font-semibold leading-tight;
+  }
+
+  .heading-sm {
+    @apply font-display text-2xl md:text-3xl font-semibold leading-tight;
+  }
+
+  .body-lg {
+    @apply text-lg leading-relaxed;
+  }
+
+  .body-base {
+    @apply text-base leading-relaxed text-gray-dark;
+  }
+
+  .body-sm {
+    @apply text-sm leading-relaxed text-gray-dark;
+  }
+
+  .label-xs {
+    @apply text-xs font-semibold uppercase tracking-widest;
+  }
+
+  .label-sm {
+    @apply text-sm font-semibold uppercase tracking-wider;
+  }
+
+  /* Button Utilities */
+  .btn-primary {
+    @apply px-6 py-3 bg-primary text-white font-medium hover:bg-secondary transition-colors duration-300 cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-transparent border border-primary text-primary font-medium hover:bg-primary hover:text-white transition-colors duration-300 cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply text-primary font-medium hover:text-accent transition-colors duration-300 cursor-pointer;
+  }
+
+  .btn-accent {
+    @apply px-6 py-3 bg-accent text-white font-medium hover:bg-opacity-90 transition-colors duration-300 cursor-pointer;
+  }
+
+  /* Container */
+  .container-max {
+    @apply max-w-7xl mx-auto px-4 md:px-6 lg:px-8;
+  }
+
+  /* Divider */
+  .divider {
+    @apply h-px bg-gray;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white shadow-sm hover:shadow-md transition-shadow duration-300;
+  }
+
+  /* Grid */
+  .grid-products {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8;
+  }
+
+  /* Sections */
+  .section-padding {
+    @apply py-16 md:py-24 lg:py-32;
+  }
+
+  .section-padding-sm {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+
+  /* Link Hover Effect */
+  .link-hover {
+    @apply relative inline-block cursor-pointer;
+  }
+
+  .link-hover::after {
+    @apply content-[''] absolute bottom-0 left-0 w-0 h-px bg-accent transition-all duration-300;
+  }
+
+  .link-hover:hover::after {
+    @apply w-full;
+  }
+
+  /* Overlay */
+  .overlay {
+    @apply absolute inset-0 bg-black bg-opacity-40;
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-light;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-dark rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-secondary;
+}
+
+/* Selection */
+::selection {
+  @apply bg-accent text-white;
+}
+
+/* Images */
+img {
+  @apply max-w-full h-auto;
+}
+
+/* Links */
+a {
+  @apply text-primary no-underline;
+}
+
+
+/* Focus States */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent;
+}
