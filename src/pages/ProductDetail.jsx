@@ -46,6 +46,8 @@ const ProductDetail = ({ cartItems, setCartItems }) => {
     : 0;
 
   const handleAddToCart = () => {
+    if (!product.inStock) return;
+
     const cartProduct = {
       id: product.id,
       product,
@@ -63,9 +65,13 @@ const ProductDetail = ({ cartItems, setCartItems }) => {
       );
 
       if (existingIndex !== -1) {
-        const updated = [...prevItems];
-        updated[existingIndex].quantity += quantity;
-        return updated;
+        // Return a new array AND a new item object — never mutate state in place
+        // (StrictMode runs updaters twice in dev, which would double the quantity).
+        return prevItems.map((item, i) =>
+          i === existingIndex
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
       }
 
       return [...prevItems, cartProduct];
@@ -159,9 +165,10 @@ const ProductDetail = ({ cartItems, setCartItems }) => {
             {/* ADD TO CART */}
             <button
               onClick={handleAddToCart}
-              className="bg-black text-white px-6 py-3"
+              disabled={!product.inStock}
+              className="bg-black text-white px-6 py-3 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {addedToCart ? 'Added!' : 'Add to Cart'}
+              {!product.inStock ? 'Out of Stock' : addedToCart ? 'Added!' : 'Add to Cart'}
             </button>
 
           </div>

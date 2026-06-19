@@ -11,8 +11,27 @@ import Contact from './pages/Contact';
 import './index.css';
 
 function App() {
-  // const [cartCount, setCartCount] = useState(3);
-const [cartItems, setCartItems] = useState([]);
+  // Load any previously saved cart so it survives page refreshes / direct links.
+const [cartItems, setCartItems] = useState(() => {
+  try {
+    const saved = localStorage.getItem('evora-cart');
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+});
+
+// Persist the cart whenever it changes.
+useEffect(() => {
+  try {
+    localStorage.setItem('evora-cart', JSON.stringify(cartItems));
+  } catch {
+    /* ignore storage errors (e.g. private mode / quota) */
+  }
+}, [cartItems]);
+
+// Total number of units across all line items (for the navbar badge).
+const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
 const updateQuantity = (id, quantity, color, size) => {
   setCartItems((prev) =>
@@ -42,7 +61,7 @@ const removeItem = (id, color, size) => {
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-white">
-        <Navbar cartCount={cartItems.length} />
+        <Navbar cartCount={cartCount} />
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />

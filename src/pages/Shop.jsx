@@ -3,24 +3,70 @@ import { motion } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import { products } from '../data/products';
 
+const MAX_PRICE = 700;
+const PAGE_SIZE = 9;
+const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const ALL_COLORS = [
+  { name: 'Black', color: '#1A1A1A' },
+  { name: 'White', color: '#F9F8F5' },
+  { name: 'Navy', color: '#1a3a52' },
+  { name: 'Camel', color: '#C9B5A0' },
+];
+
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
-  const [priceRange, setPriceRange] = useState(500);
+  const [priceRange, setPriceRange] = useState(MAX_PRICE);
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const categories = ['All', 'Women', 'Men', 'Accessories'];
+
+  const toggleFromList = (value, setter) => {
+    setter((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
+
+  const resetFilters = () => {
+    setSelectedCategory('All');
+    setSortBy('featured');
+    setPriceRange(MAX_PRICE);
+    setSelectedSizes([]);
+    setSelectedColors([]);
+  };
 
   // Filter products
   const filteredProducts = products
     .filter((p) => selectedCategory === 'All' || p.category === selectedCategory)
     .filter((p) => p.price <= priceRange)
+    .filter(
+      (p) => selectedSizes.length === 0 || p.sizes.some((s) => selectedSizes.includes(s))
+    )
+    .filter(
+      (p) => selectedColors.length === 0 || p.colors.some((c) => selectedColors.includes(c))
+    )
     .sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
       if (sortBy === 'newest') return b.id - a.id;
       return 0;
     });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProducts = filteredProducts.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
+  );
+
+  // Whenever the active filters change, jump back to the first page.
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, sortBy, priceRange, selectedSizes, selectedColors]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -131,7 +177,7 @@ const Shop = () => {
                   <input
                     type="range"
                     min="0"
-                    max="700"
+                    max={MAX_PRICE}
                     value={priceRange}
                     onChange={(e) => setPriceRange(Number(e.target.value))}
                     className="w-full accent-accent"
@@ -152,14 +198,22 @@ const Shop = () => {
               >
                 <h4 className="label-sm text-primary mb-4">Size</h4>
                 <div className="grid grid-cols-3 gap-2">
-                  {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-                    <button
-                      key={size}
-                      className="aspect-square border border-gray hover:border-primary transition-colors flex items-center justify-center text-sm font-medium hover:bg-light"
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {ALL_SIZES.map((size) => {
+                    const active = selectedSizes.includes(size);
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => toggleFromList(size, setSelectedSizes)}
+                        className={`aspect-square border transition-colors flex items-center justify-center text-sm font-medium ${
+                          active
+                            ? 'border-primary bg-primary text-white'
+                            : 'border-gray hover:border-primary hover:bg-light'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
                 </div>
               </motion.div>
 
@@ -173,19 +227,23 @@ const Shop = () => {
               >
                 <h4 className="label-sm text-primary mb-4">Color</h4>
                 <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { name: 'Black', color: '#1A1A1A' },
-                    { name: 'White', color: '#F9F8F5' },
-                    { name: 'Navy', color: '#1a3a52' },
-                    { name: 'Camel', color: '#C9B5A0' },
-                  ].map((item) => (
-                    <button
-                      key={item.name}
-                      className="aspect-square rounded-full border-2 border-gray hover:border-primary transition-all"
-                      style={{ backgroundColor: item.color }}
-                      title={item.name}
-                    ></button>
-                  ))}
+                  {ALL_COLORS.map((item) => {
+                    const active = selectedColors.includes(item.name);
+                    return (
+                      <button
+                        key={item.name}
+                        onClick={() => toggleFromList(item.name, setSelectedColors)}
+                        className={`aspect-square rounded-full border-2 transition-all ${
+                          active
+                            ? 'border-accent ring-2 ring-accent ring-offset-1'
+                            : 'border-gray hover:border-primary'
+                        }`}
+                        style={{ backgroundColor: item.color }}
+                        title={item.name}
+                        aria-pressed={active}
+                      ></button>
+                    );
+                  })}
                 </div>
               </motion.div>
 
@@ -197,11 +255,7 @@ const Shop = () => {
                 transition={{ delay: 0.3 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  setSelectedCategory('All');
-                  setSortBy('featured');
-                  setPriceRange(500);
-                }}
+                onClick={resetFilters}
               >
                 Reset Filters
               </motion.button>
@@ -249,7 +303,7 @@ const Shop = () => {
                 initial="hidden"
                 animate="visible"
               >
-                {filteredProducts.map((product) => (
+                {paginatedProducts.map((product) => (
                   <motion.div key={product.id} variants={itemVariants}>
                     <ProductCard product={product} />
                   </motion.div>
@@ -267,11 +321,7 @@ const Shop = () => {
                 </p>
                 <button
                   className="btn-secondary"
-                  onClick={() => {
-                    setSelectedCategory('All');
-                    setSortBy('featured');
-                    setPriceRange(500);
-                  }}
+                  onClick={resetFilters}
                 >
                   Clear Filters
                 </button>
@@ -282,7 +332,7 @@ const Shop = () => {
       </section>
 
       {/* Pagination */}
-      {filteredProducts.length > 0 && (
+      {filteredProducts.length > 0 && totalPages > 1 && (
         <motion.section
           className="border-t border-gray py-8 md:py-12"
           initial={{ opacity: 0 }}
@@ -291,12 +341,19 @@ const Shop = () => {
           viewport={{ once: true }}
         >
           <div className="container-max flex justify-center items-center gap-2">
-            <button className="btn-secondary px-4 py-2 text-sm">← Previous</button>
-            {[1, 2, 3].map((num) => (
+            <button
+              className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={safePage === 1}
+            >
+              ← Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
               <button
                 key={num}
+                onClick={() => setCurrentPage(num)}
                 className={`w-10 h-10 flex items-center justify-center font-medium transition-all ${
-                  num === 1
+                  num === safePage
                     ? 'bg-primary text-white'
                     : 'border border-gray hover:border-primary'
                 }`}
@@ -304,7 +361,13 @@ const Shop = () => {
                 {num}
               </button>
             ))}
-            <button className="btn-secondary px-4 py-2 text-sm">Next →</button>
+            <button
+              className="btn-secondary px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={safePage === totalPages}
+            >
+              Next →
+            </button>
           </div>
         </motion.section>
       )}

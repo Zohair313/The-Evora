@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { products } from '../data/products';
+
+// Promo codes map to a percentage rate so the discount always tracks the
+// current subtotal (it can never become stale or exceed what's in the cart).
+const PROMO_CODES = {
+  LUXURY20: 0.2,
+  WELCOME10: 0.1,
+};
 
 const Cart = ({ cartItems, updateQuantity, removeItem }) => {
   // Dummy cart items
@@ -12,11 +18,14 @@ const Cart = ({ cartItems, updateQuantity, removeItem }) => {
   // ]);
 
   const [promoCode, setPromoCode] = useState('');
-  const [discount, setDiscount] = useState(0);
+  const [appliedPromo, setAppliedPromo] = useState(null); // { code, rate }
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  // Derive the discount from the current subtotal so it stays correct when
+  // quantities change or items are removed (never negative, never stale).
+  const discount = appliedPromo ? subtotal * appliedPromo.rate : 0;
   const shipping = subtotal > 150 ? 0 : 15;
-  const tax = (subtotal - discount) * 0.08;
+  const tax = Math.max(0, subtotal - discount) * 0.08;
   const total = subtotal + shipping + tax - discount;
 
   // const updateQuantity = (id, quantity) => {
@@ -32,12 +41,11 @@ const Cart = ({ cartItems, updateQuantity, removeItem }) => {
   // };
 
   const applyPromoCode = () => {
-    if (promoCode === 'LUXURY20') {
-      setDiscount(subtotal * 0.2);
-    } else if (promoCode === 'WELCOME10') {
-      setDiscount(subtotal * 0.1);
+    const rate = PROMO_CODES[promoCode];
+    if (rate) {
+      setAppliedPromo({ code: promoCode, rate });
     } else {
-      setDiscount(0);
+      setAppliedPromo(null);
       alert('Invalid promo code');
     }
   };
@@ -205,7 +213,7 @@ const Cart = ({ cartItems, updateQuantity, removeItem }) => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                     >
-                      <span>Discount ({promoCode})</span>
+                      <span>Discount ({appliedPromo?.code})</span>
                       <span>-${discount.toFixed(2)}</span>
                     </motion.div>
                   )}

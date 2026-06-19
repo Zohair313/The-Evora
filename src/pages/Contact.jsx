@@ -9,6 +9,7 @@ const Contact = () => {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -16,10 +17,25 @@ const Contact = () => {
       ...prev,
       [name]: value,
     }));
+    if (error) setError('');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const { name, email, subject, message } = formData;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!name.trim() || !email.trim() || !subject || !message.trim()) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    setError('');
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
@@ -300,6 +316,17 @@ const Contact = () => {
                     className="w-full px-4 py-3 border border-gray bg-white text-primary placeholder-gray-dark focus:outline-none focus:ring-2 focus:ring-accent transition-all resize-none"
                   ></textarea>
                 </motion.div>
+
+                {/* Validation Error */}
+                {error && (
+                  <motion.p
+                    className="text-sm text-red-500"
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {error}
+                  </motion.p>
+                )}
 
                 {/* Submit Button */}
                 <motion.div
