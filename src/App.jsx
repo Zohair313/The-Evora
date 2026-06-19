@@ -59,7 +59,7 @@ const removeItem = (id, color, size) => {
 
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <div className="flex flex-col min-h-screen bg-white">
         <Navbar cartCount={cartCount} />
         <main className="flex-1">
